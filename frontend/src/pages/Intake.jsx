@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createCase } from '../api'
+import { createCase, uploadFile } from '../api'
 
 const STEPS = ['Deceased Details', 'Financial Accounts', 'Employment & Property', 'Family Contact']
 
-const EMPTY_BANK = { bank_name: '', account_type: 'savings', branch: '', has_nominee: true }
+const EMPTY_BANK = { bank_name: '', account_type: 'savings', branch: '', account_number: '', ifsc_code: '', has_nominee: true }
 const EMPTY_INSURER = { insurer_name: '', policy_type: 'life', policy_number: '', nominee: '' }
-const EMPTY_EMPLOYER = { employer_name: '', designation: '', has_pf: true, has_gratuity: true }
-const EMPTY_PROPERTY = { description: '', location: '' }
+const EMPTY_EMPLOYER = { employer_name: '', designation: '', company_location: '', employee_id: '', department: '', has_pf: true, has_gratuity: true, last_working_date: '' }
+const EMPTY_PROPERTY = { description: '', address: '', location: '', google_maps_link: '', document_file: null }
 const EMPTY_MEMBER = { name: '', relation: 'spouse', is_primary_contact: true, phone: '', email: '' }
 
 const AI_STEPS = [
@@ -111,14 +111,19 @@ export default function Intake() {
   const [error, setError] = useState(null)
 
   const [form, setForm] = useState({
-    deceased_name: '', date_of_death: '', place_of_death: '', religion: '',
+    deceased_name: '', gender: '', date_of_death: '', place_of_death: '', religion: '',
     death_certificate_obtained: false,
+    death_certificate_file: null,
+    supporting_document_file: null,
     banks: [],
     insurance_policies: [],
     employers: [],
     properties: [],
     family_members: [{ ...EMPTY_MEMBER }],
   })
+
+  // Track uploaded file names for display
+  const [uploadedFiles, setUploadedFiles] = useState({})
 
   const update = (field, value) => setForm(f => ({ ...f, [field]: value }))
 
@@ -141,8 +146,20 @@ export default function Intake() {
     }
   }
 
+  const handleFileUpload = async (e, fieldName) => {
+    const file = e.target.files[0]
+    if (!file) return
+    try {
+      const res = await uploadFile(file)
+      update(fieldName, res.data.filename)
+      setUploadedFiles(prev => ({ ...prev, [fieldName]: file.name }))
+    } catch (err) {
+      setError('File upload failed. Please try again.')
+    }
+  }
+
   const canNext = () => {
-    if (step === 0) return form.deceased_name.trim() && form.date_of_death
+    if (step === 0) return form.deceased_name.trim() && form.date_of_death && form.place_of_death.trim()
     return true
   }
 
@@ -209,16 +226,26 @@ export default function Intake() {
                   <input className="form-input" placeholder="e.g. Rajesh Kumar Sharma"
                     value={form.deceased_name} onChange={e => update('deceased_name', e.target.value)} />
                 </Field>
+                <Field label="Gender">
+                  <select className="form-input" value={form.gender} onChange={e => update('gender', e.target.value)}>
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </Field>
+              </Row>
+              <Row>
                 <Field label="Date of Death *">
                   <input className="form-input" type="date"
                     value={form.date_of_death} onChange={e => update('date_of_death', e.target.value)} />
                 </Field>
-              </Row>
-              <Row>
-                <Field label="Place of Death">
+                <Field label="Place of Death *">
                   <input className="form-input" placeholder="e.g. AIIMS, New Delhi"
                     value={form.place_of_death} onChange={e => update('place_of_death', e.target.value)} />
                 </Field>
+              </Row>
+              <Row>
                 <Field label="Religion">
                   <select className="form-input" value={form.religion} onChange={e => update('religion', e.target.value)}>
                     <option value="">Select (optional)</option>
@@ -227,7 +254,9 @@ export default function Intake() {
                   </select>
                 </Field>
               </Row>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, cursor: 'pointer' }}>
+
+              {/* Death Certificate Toggle */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 20, cursor: 'pointer' }}>
                 <input type="checkbox" checked={form.death_certificate_obtained}
                   onChange={e => update('death_certificate_obtained', e.target.checked)}
                   style={{ width: 16, height: 16, accentColor: 'var(--gold)' }} />
@@ -235,6 +264,72 @@ export default function Intake() {
                   Death certificate has already been obtained
                 </span>
               </label>
+
+              {/* Conditional File Upload */}
+              <div style={{ marginTop: 20 }}>
+                {form.death_certificate_obtained ? (
+                  <div>
+                    <label className="form-label" style={{ marginBottom: 8, display: 'block' }}>
+                      Upload Death Certificate (PDF) *
+                    </label>
+                    <div style={{
+                      border: '2px dashed rgba(201,168,76,0.3)', borderRadius: 12,
+                      padding: '20px 24px', textAlign: 'center',
+                      background: 'rgba(201,168,76,0.04)', cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={e => handleFileUpload(e, 'death_certificate_file')}
+                        style={{ display: 'none' }} id="dc-upload" />
+                      <label htmlFor="dc-upload" style={{ cursor: 'pointer', display: 'block' }}>
+                        {uploadedFiles.death_certificate_file ? (
+                          <div style={{ color: 'var(--sage-light)', fontSize: '0.88rem' }}>
+                            ✅ {uploadedFiles.death_certificate_file}
+                          </div>
+                        ) : (
+                          <div>
+                            <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>📄</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Click to upload Death Certificate</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', opacity: 0.6, marginTop: 4 }}>PDF, JPG, PNG accepted</div>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="form-label" style={{ marginBottom: 8, display: 'block' }}>
+                      Upload Hospital Summary / Cremation Certificate (PDF)
+                    </label>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 12, opacity: 0.7 }}>
+                      Since the death certificate is not yet obtained, please upload supporting documents like hospital discharge summary or cremation ground receipt.
+                    </p>
+                    <div style={{
+                      border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 12,
+                      padding: '20px 24px', textAlign: 'center',
+                      background: 'rgba(255,255,255,0.02)', cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={e => handleFileUpload(e, 'supporting_document_file')}
+                        style={{ display: 'none' }} id="sd-upload" />
+                      <label htmlFor="sd-upload" style={{ cursor: 'pointer', display: 'block' }}>
+                        {uploadedFiles.supporting_document_file ? (
+                          <div style={{ color: 'var(--sage-light)', fontSize: '0.88rem' }}>
+                            ✅ {uploadedFiles.supporting_document_file}
+                          </div>
+                        ) : (
+                          <div>
+                            <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>📁</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Click to upload supporting document</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', opacity: 0.6, marginTop: 4 }}>PDF, JPG, PNG accepted (Optional)</div>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -262,8 +357,18 @@ export default function Intake() {
                       </select>
                     </Field>
                   </Row>
-                  <Field label="Branch (optional)">
-                    <input className="form-input" placeholder="e.g. Connaught Place, New Delhi"
+                  <Row>
+                    <Field label="Account Number (optional)">
+                      <input className="form-input" placeholder="e.g. 10293847561"
+                        value={bank.account_number} onChange={e => updateItem('banks', i, 'account_number', e.target.value)} />
+                    </Field>
+                    <Field label="IFSC Code (optional)">
+                      <input className="form-input" placeholder="e.g. SBIN0001234"
+                        value={bank.ifsc_code} onChange={e => updateItem('banks', i, 'ifsc_code', e.target.value)} />
+                    </Field>
+                  </Row>
+                  <Field label="Branch Name (optional)">
+                    <input className="form-input" placeholder="e.g. Connaught Place Branch, New Delhi"
                       value={bank.branch} onChange={e => updateItem('banks', i, 'branch', e.target.value)} />
                   </Field>
                 </div>
@@ -314,13 +419,33 @@ export default function Intake() {
                     <button onClick={() => removeItem('employers', i)} style={{ background: 'none', border: 'none', color: '#F08080', cursor: 'pointer', fontSize: '0.85rem' }}>Remove</button>
                   </div>
                   <Row>
-                    <Field label="Employer Name">
-                      <input className="form-input" placeholder="e.g. Ministry of Railways"
+                    <Field label="Company / Employer Name">
+                      <input className="form-input" placeholder="e.g. Ministry of Railways / TCS"
                         value={emp.employer_name} onChange={e => updateItem('employers', i, 'employer_name', e.target.value)} />
                     </Field>
-                    <Field label="Designation">
-                      <input className="form-input" placeholder="e.g. Station Master"
+                    <Field label="Company Location / Address">
+                      <input className="form-input" placeholder="e.g. Barakhamba Road, New Delhi"
+                        value={emp.company_location} onChange={e => updateItem('employers', i, 'company_location', e.target.value)} />
+                    </Field>
+                  </Row>
+                  <Row>
+                    <Field label="Designation / Post">
+                      <input className="form-input" placeholder="e.g. Senior Manager / Station Master"
                         value={emp.designation} onChange={e => updateItem('employers', i, 'designation', e.target.value)} />
+                    </Field>
+                    <Field label="Employee ID / Staff Code (optional)">
+                      <input className="form-input" placeholder="e.g. EMP-98210"
+                        value={emp.employee_id} onChange={e => updateItem('employers', i, 'employee_id', e.target.value)} />
+                    </Field>
+                  </Row>
+                  <Row>
+                    <Field label="Department (optional)">
+                      <input className="form-input" placeholder="e.g. Accounts & Finance"
+                        value={emp.department} onChange={e => updateItem('employers', i, 'department', e.target.value)} />
+                    </Field>
+                    <Field label="Last Working Date (optional)">
+                      <input className="form-input" type="date"
+                        value={emp.last_working_date} onChange={e => updateItem('employers', i, 'last_working_date', e.target.value)} />
                     </Field>
                   </Row>
                   <div style={{ display: 'flex', gap: 24, marginTop: 10 }}>
@@ -345,14 +470,63 @@ export default function Intake() {
                     <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>Property #{i + 1}</span>
                     <button onClick={() => removeItem('properties', i)} style={{ background: 'none', border: 'none', color: '#F08080', cursor: 'pointer', fontSize: '0.85rem' }}>Remove</button>
                   </div>
-                  <Field label="Description">
-                    <input className="form-input" placeholder="e.g. 2BHK flat in Rohini, Delhi"
-                      value={prop.description} onChange={e => updateItem('properties', i, 'description', e.target.value)} />
+                  <Row>
+                    <Field label="Property Description">
+                      <input className="form-input" placeholder="e.g. 3BHK Apartment / Agricultural Plot"
+                        value={prop.description} onChange={e => updateItem('properties', i, 'description', e.target.value)} />
+                    </Field>
+                    <Field label="City / Location">
+                      <input className="form-input" placeholder="e.g. Rohini, Sector 9, New Delhi"
+                        value={prop.location} onChange={e => updateItem('properties', i, 'location', e.target.value)} />
+                    </Field>
+                  </Row>
+                  <Field label="Full Address">
+                    <input className="form-input" placeholder="e.g. Flat 302, Royal Heights, Pocket 4, Rohini, New Delhi 110085"
+                      value={prop.address} onChange={e => updateItem('properties', i, 'address', e.target.value)} />
                   </Field>
-                  <Field label="Location">
-                    <input className="form-input" placeholder="e.g. Rohini, New Delhi"
-                      value={prop.location} onChange={e => updateItem('properties', i, 'location', e.target.value)} />
-                  </Field>
+                  <Row style={{ marginTop: 14 }}>
+                    <Field label="Google Maps Link (Optional)">
+                      <input className="form-input" placeholder="e.g. https://maps.app.goo.gl/..."
+                        value={prop.google_maps_link} onChange={e => updateItem('properties', i, 'google_maps_link', e.target.value)} />
+                    </Field>
+                  </Row>
+                  <div style={{ marginTop: 14 }}>
+                    <label className="form-label" style={{ marginBottom: 8, display: 'block' }}>Property Documents (Optional PDF)</label>
+                    <div style={{
+                      border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 12,
+                      padding: '20px 24px', textAlign: 'center',
+                      background: 'rgba(255,255,255,0.02)', cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={async (e) => {
+                          const file = e.target.files[0]
+                          if (file) {
+                            try {
+                              const res = await uploadFile(file)
+                              updateItem('properties', i, 'document_file', res.data.filename)
+                              setUploadedFiles(prev => ({ ...prev, [`prop_${i}`]: file.name }))
+                            } catch (err) {
+                              setError('Failed to upload property document.')
+                            }
+                          }
+                        }}
+                        style={{ display: 'none' }} id={`prop-upload-${i}`} />
+                      <label htmlFor={`prop-upload-${i}`} style={{ cursor: 'pointer', display: 'block' }}>
+                        {uploadedFiles[`prop_${i}`] || prop.document_file ? (
+                          <div style={{ color: 'var(--sage-light)', fontSize: '0.88rem' }}>
+                            ✅ {uploadedFiles[`prop_${i}`] || prop.document_file}
+                          </div>
+                        ) : (
+                          <div>
+                            <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>🏠</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Click to upload property document</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', opacity: 0.6, marginTop: 4 }}>PDF, JPG, PNG accepted (Optional)</div>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </div>
                 </div>
               ))}
               <button className="btn-ghost" onClick={() => addItem('properties', EMPTY_PROPERTY)}>+ Add Property</button>

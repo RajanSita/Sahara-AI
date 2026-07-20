@@ -27,7 +27,9 @@ const FEATURES = [
   { icon: '🌐', title: 'India-First Design', desc: 'Built for Indian institutional processes: EPFO, succession certificates, mutation.' },
 ]
 
-export default function Landing() {
+export default function Landing({ user }) {
+  const isAuth = !!user || !!localStorage.getItem('token')
+
   return (
     <div>
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
@@ -87,12 +89,15 @@ export default function Landing() {
             </p>
 
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link to="/intake" className="btn-primary" style={{ fontSize: '1rem', padding: '14px 36px' }}>
-                Start a New Case →
-              </Link>
-              <Link to="/cases" className="btn-secondary" style={{ fontSize: '1rem', padding: '14px 36px' }}>
-                View Cases
-              </Link>
+              {isAuth ? (
+                <Link to="/cases" className="btn-primary" style={{ fontSize: '1rem', padding: '14px 36px' }}>
+                  Go to Dashboard →
+                </Link>
+              ) : (
+                <button onClick={() => window.location.href = '/api/auth/google'} className="btn-primary" style={{ fontSize: '1rem', padding: '14px 36px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span></span> Sign in with Google to Begin →
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -201,11 +206,17 @@ export default function Landing() {
           <div className="glass-card" style={{ padding: '60px 40px', maxWidth: 700, margin: '0 auto' }}>
             <h2 className="section-title" style={{ marginBottom: 16 }}>Ready to begin?</h2>
             <p style={{ color: 'var(--text-muted)', marginBottom: 36, fontSize: '1.05rem', lineHeight: 1.8 }}>
-              Fill in a few details about the deceased and their assets. The AI will handle the rest.
+              Sign in with your Google account to access your personal dashboard, track administrative tasks, and send applications directly.
             </p>
-            <Link to="/intake" className="btn-primary" style={{ fontSize: '1rem', padding: '16px 44px' }}>
-              Start a New Case →
-            </Link>
+            {isAuth ? (
+              <Link to="/cases" className="btn-primary" style={{ fontSize: '1rem', padding: '16px 44px' }}>
+                Go to Dashboard →
+              </Link>
+            ) : (
+              <button onClick={() => window.location.href = '/api/auth/google'} className="btn-primary" style={{ fontSize: '1rem', padding: '16px 44px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <span>🌐</span> Sign in with Google →
+              </button>
+            )}
           </div>
         </div>
       </section>
