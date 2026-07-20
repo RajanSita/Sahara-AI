@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 
-export default function Navbar() {
+export default function Navbar({ user, onLogout }) {
   const location = useLocation()
 
   return (
@@ -37,8 +37,36 @@ export default function Navbar() {
         {/* Nav links */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <NavLink to="/" label="Home" active={location.pathname === '/'} />
-          <NavLink to="/intake" label="New Case" active={location.pathname === '/intake'} />
-          <NavLink to="/cases" label="Cases" active={location.pathname.startsWith('/cases')} />
+
+          {user ? (
+            <>
+              <NavLink to="/intake" label="New Case" active={location.pathname === '/intake'} />
+              <NavLink to="/cases" label="Cases" active={location.pathname.startsWith('/cases')} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 12, paddingLeft: 12, borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--gold)', fontWeight: 600 }}>
+                  👤 {user.name}
+                </span>
+                <button onClick={onLogout} style={{
+                  background: 'rgba(220,80,80,0.12)', border: '1px solid rgba(220,80,80,0.3)',
+                  color: '#F08080', borderRadius: 20, padding: '5px 12px', fontSize: '0.78rem',
+                  cursor: 'pointer', fontWeight: 500,
+                }}>
+                  Logout
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
+              <button onClick={() => window.location.href = '/api/auth/google'} style={{
+                padding: '7px 16px', borderRadius: '20px', fontSize: '0.82rem',
+                fontWeight: 600, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.06)',
+                color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                transition: 'all 0.2s',
+              }}>
+                <span>🌐</span> Sign in with Google
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

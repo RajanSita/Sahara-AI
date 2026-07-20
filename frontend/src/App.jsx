@@ -1,10 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Landing from './pages/Landing'
 import Intake from './pages/Intake'
 import Dashboard from './pages/Dashboard'
 import Review from './pages/Review'
 import Cases from './pages/Cases'
+import { getMe } from './api'
 
 function NotFound() {
   return (
@@ -18,9 +20,36 @@ function NotFound() {
 }
 
 export default function App() {
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    // Check if redirected back from Google OAuth with ?token=...
+    const urlParams = new URLSearchParams(window.location.search)
+    const tokenFromUrl = urlParams.get('token')
+    if (tokenFromUrl) {
+      localStorage.setItem('token', tokenFromUrl)
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+
+    const token = localStorage.getItem('token')
+    if (token) {
+      getMe()
+        .then(res => setUser(res.data))
+        .catch(() => {
+          localStorage.removeItem('token')
+          setUser(null)
+        })
+    }
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    setUser(null)
+  }
+
   return (
     <BrowserRouter>
-      <Navbar />
+      <Navbar user={user} onLogout={handleLogout} />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/intake" element={<Intake />} />
