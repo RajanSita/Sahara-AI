@@ -20,7 +20,7 @@ import agents.drafting_agent as drafting_agent
 import agents.followup_agent as followup_agent
 
 
-def process_new_case(form_data: IntakeFormRequest, db: Session) -> Case:
+def process_new_case(form_data: IntakeFormRequest, db: Session, user_id: str = None) -> Case:
     """
     Full pipeline for a new case:
     1. intake_agent → structured case data
@@ -47,7 +47,9 @@ def process_new_case(form_data: IntakeFormRequest, db: Session) -> Case:
 
     db_case = Case(
         id=case_id,
+        user_id=user_id,
         deceased_name=case_data["deceased"]["name"],
+        gender=case_data["deceased"].get("gender"),
         date_of_death=case_data["deceased"]["date_of_death"],
         place_of_death=case_data["deceased"].get("place_of_death"),
         religion=case_data["deceased"].get("religion"),
@@ -69,6 +71,7 @@ def process_new_case(form_data: IntakeFormRequest, db: Session) -> Case:
             institution_name=task_spec["institution_name"],
             institution_type=task_spec["institution_type"],
             task_type=task_spec["task_type"],
+            recipient_email=task_spec.get("recipient_email"),
             required_documents=task_spec.get("required_documents"),
             priority_rank=task_spec.get("priority_rank", 99),
             depends_on=task_spec.get("depends_on"),

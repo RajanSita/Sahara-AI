@@ -21,6 +21,7 @@ def run(form_data: IntakeFormRequest) -> dict:
     case_data = {
         "deceased": {
             "name": form_data.deceased_name,
+            "gender": form_data.gender,
             "date_of_death": form_data.date_of_death,
             "place_of_death": form_data.place_of_death,
             "religion": form_data.religion,
