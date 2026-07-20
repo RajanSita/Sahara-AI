@@ -37,13 +37,29 @@ class InstitutionType(str, enum.Enum):
     PROPERTY = "property"
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    picture = Column(String, nullable=True)
+    password_hash = Column(String, nullable=True)  # Optional for Google OAuth users
+    google_refresh_token = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    cases = relationship("Case", back_populates="user", cascade="all, delete-orphan")
+
+
 class Case(Base):
     __tablename__ = "cases"
 
     id = Column(String, primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=True)
     deceased_name = Column(String, nullable=False)
+    gender = Column(String)
     date_of_death = Column(String, nullable=False)
-    place_of_death = Column(String)
+    place_of_death = Column(String, nullable=False)
     religion = Column(String)
     family_contact_name = Column(String)
     family_contact_relation = Column(String)
@@ -53,6 +69,7 @@ class Case(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
+    user = relationship("User", back_populates="cases")
     tasks = relationship("Task", back_populates="case", cascade="all, delete-orphan")
 
 
@@ -64,6 +81,7 @@ class Task(Base):
     institution_name = Column(String, nullable=False)
     institution_type = Column(String, nullable=False)
     task_type = Column(String, nullable=False)
+    recipient_email = Column(String, nullable=True)
     required_documents = Column(Text)  # JSON list
     priority_rank = Column(Integer, default=99)
     depends_on = Column(Text)  # JSON list of task IDs
@@ -102,3 +120,31 @@ def get_db():
 
 def init_db():
     Base.metadata.create_all(bind=engine)
+    # Ensure new columns exist in sqlite table
+    with engine.connect() as conn:
+        from sqlalchemy import text
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN picture VARCHAR"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN google_refresh_token TEXT"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE cases ADD COLUMN user_id VARCHAR"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE cases ADD COLUMN gender VARCHAR"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE tasks ADD COLUMN recipient_email VARCHAR"))
+            conn.commit()
+        except Exception:
+            pass

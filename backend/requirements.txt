@@ -7,3 +7,11 @@ python-dotenv
 python-docx
 jinja2
 apscheduler
+python-multipart
+passlib
+bcrypt
+PyJWT
+email-validator
+google-auth-oauthlib
+google-api-python-client
+httpx
