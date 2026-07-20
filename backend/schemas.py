@@ -69,6 +69,7 @@ class IntakeFormRequest(BaseModel):
     # Death certificate
     death_certificate_obtained: bool = False
     death_certificate_file: Optional[str] = None  # filename if uploaded
+    hospital_summary_file: Optional[str] = None  # hospital/cremation doc filename
     supporting_document_file: Optional[str] = None  # hospital/cremation doc filename
 
 
