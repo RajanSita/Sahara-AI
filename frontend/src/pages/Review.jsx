@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getCase, getTaskDraft, approveTask, editDraft, rejectTask, completeTask, triggerFollowup, getCaseTasks } from '../api'
+import { getCase, getTaskDraft, approveTask, sendGmailTask, editDraft, rejectTask, completeTask, triggerFollowup, getCaseTasks } from '../api'
 import StatusBadge from '../components/StatusBadge'
 import { INSTITUTION_ICONS, INSTITUTION_COLORS, formatDate } from '../utils'
 
@@ -18,6 +18,8 @@ export default function Review() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(null)
   const [toast, setToast] = useState(null)
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [recipientEmail, setRecipientEmail] = useState('')
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type })
@@ -56,6 +58,34 @@ export default function Review() {
       await load()
     } catch (e) {
       showToast(e.response?.data?.detail || 'Failed to approve', 'error')
+    } finally { setActionLoading(null) }
+  }
+
+  const handleSendGmailSubmit = async (e) => {
+    e.preventDefault()
+    if (!recipientEmail) return
+    setActionLoading('send_gmail')
+    try {
+      const res = await sendGmailTask(taskId, recipientEmail)
+      showToast(`🌐 Sent via Gmail API to ${recipientEmail}!`)
+      setShowEmailModal(false)
+      await load()
+    } catch (e) {
+      showToast(e.response?.data?.detail || 'Gmail sending failed. Make sure you are signed in with Google.', 'error')
+    } finally { setActionLoading(null) }
+  }
+
+  const handleSendEmailSubmit = async (e) => {
+    e.preventDefault()
+    if (!recipientEmail) return
+    setActionLoading('send_email')
+    try {
+      const res = await sendTaskEmail(taskId, recipientEmail)
+      showToast(`✉️ ${res.data.result.message}`)
+      setShowEmailModal(false)
+      await load()
+    } catch (e) {
+      showToast(e.response?.data?.detail || 'Failed to send email', 'error')
     } finally { setActionLoading(null) }
   }
 
@@ -277,6 +307,12 @@ export default function Review() {
 
               {(task.status === 'awaiting_approval' || task.status === 'not_started') && (
                 <>
+                  <button className="btn-primary" onClick={() => {
+                    setRecipientEmail(task.recipient_email || '')
+                    setShowEmailModal(true)
+                  }} disabled={!!actionLoading}>
+                    ✉️ Send Direct Email
+                  </button>
                   <button className="btn-success" onClick={handleApprove} disabled={!!actionLoading}>
                     {actionLoading === 'approve' ? '⏳ Approving…' : '✅ Approve & Mark Sent'}
                   </button>
@@ -284,6 +320,34 @@ export default function Review() {
                     ❌ Reject
                   </button>
                 </>
+              )}
+
+              {/* Email Send Modal */}
+              {showEmailModal && (
+                <div style={{
+                  width: '100%', marginTop: 16, padding: '20px 24px',
+                  background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.3)',
+                  borderRadius: 12, animation: 'fadeIn 0.2s ease',
+                }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 6, color: 'var(--gold)' }}>
+                    ✉️ Send Letter via Gmail API
+                  </div>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+                    Automatically auto-detected recipient authority email for {task.institution_name}. Dispatches directly from your personal Gmail account.
+                  </p>
+                  <form onSubmit={handleSendGmailSubmit} style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 260 }}>
+                      <input className="form-input" type="email" placeholder="e.g. claims@sbi.co.in or hr@company.com" required
+                        value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} />
+                    </div>
+                    <button className="btn-primary" type="submit" disabled={actionLoading === 'send_gmail'}>
+                      {actionLoading === 'send_gmail' ? '⏳ Sending via Gmail…' : '🌐 Send via My Gmail'}
+                    </button>
+                    <button className="btn-ghost" type="button" onClick={() => setShowEmailModal(false)}>
+                      Cancel
+                    </button>
+                  </form>
+                </div>
               )}
 
               {task.status === 'sent' && (
