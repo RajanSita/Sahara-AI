@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getCase, getCaseTasks, getCaseStats } from '../api'
+import { getCase, getCaseTasks, getCaseStats, syncInbox, deleteCase } from '../api'
 import TaskCard from '../components/TaskCard'
 import StatusBadge from '../components/StatusBadge'
 import { INSTITUTION_ICONS, groupTasksByType, formatDate } from '../utils'
@@ -20,6 +20,9 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [syncMsg, setSyncMsg] = useState(null)
   const [activeFilter, setActiveFilter] = useState('all')
 
   const load = async () => {
@@ -36,6 +39,35 @@ export default function Dashboard() {
       console.error(e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDeleteCase = async () => {
+    if (!window.confirm(`Are you sure you want to delete the case for Late ${caseData.deceased_name}? This will permanently delete all tasks and drafts.`)) {
+      return
+    }
+    setDeleting(true)
+    try {
+      await deleteCase(caseId)
+      navigate('/cases')
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Failed to delete case')
+      setDeleting(false)
+    }
+  }
+
+  const handleSyncInbox = async () => {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      const res = await syncInbox(caseId)
+      setSyncMsg(res.data.message || 'Inbox synced successfully!')
+      await load()
+    } catch (e) {
+      setSyncMsg(e.response?.data?.detail || 'Inbox sync failed.')
+    } finally {
+      setSyncing(false)
+      setTimeout(() => setSyncMsg(null), 5000)
     }
   }
 
@@ -107,20 +139,49 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Progress ring area */}
-            {stats && (
-              <div style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontSize: '2.4rem', fontWeight: 700,
-                  fontFamily: "'Cormorant Garamond', serif",
-                  color: stats.progress_pct === 100 ? 'var(--sage-light)' : 'var(--gold)',
-                }}>
-                  {stats.progress_pct}%
+            {/* Progress ring area, Sync Inbox & Delete Case Button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <button onClick={handleSyncInbox} disabled={syncing} className="btn-secondary" style={{
+                padding: '10px 18px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                {syncing ? '⏳ Syncing Inbox…' : '🔄 Sync Inbox for Replies'}
+              </button>
+
+              <button onClick={handleDeleteCase} disabled={deleting} style={{
+                background: 'rgba(220,80,80,0.12)', border: '1px solid rgba(220,80,80,0.3)',
+                color: '#F08080', borderRadius: 8, padding: '10px 18px', fontSize: '0.85rem',
+                cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(220,80,80,0.25)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(220,80,80,0.12)'}
+              >
+                {deleting ? '⏳ Deleting…' : '🗑️ Delete Case'}
+              </button>
+              {stats && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: '2.4rem', fontWeight: 700,
+                    fontFamily: "'Cormorant Garamond', serif",
+                    color: stats.progress_pct === 100 ? 'var(--sage-light)' : 'var(--gold)',
+                  }}>
+                    {stats.progress_pct}%
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Complete</div>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Complete</div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+
+          {syncMsg && (
+            <div style={{
+              marginTop: 16, padding: '10px 16px', borderRadius: 8,
+              background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.3)',
+              color: 'var(--gold)', fontSize: '0.85rem', animation: 'fadeIn 0.2s ease',
+            }}>
+              ✉️ {syncMsg}
+            </div>
+          )}
 
           {/* Stats bar */}
           {stats && (

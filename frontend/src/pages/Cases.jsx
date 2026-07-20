@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { listCases, getCaseStats } from '../api'
+import { listCases, getCaseStats, deleteCase } from '../api'
 import { formatDate } from '../utils'
 
 export default function Cases() {
@@ -8,19 +8,43 @@ export default function Cases() {
   const [cases, setCases] = useState([])
   const [statsMap, setStatsMap] = useState({})
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState(null)
 
-  useEffect(() => {
-    listCases().then(async res => {
+  const fetchCases = async () => {
+    try {
+      const res = await listCases()
       const cases = res.data
       setCases(cases)
-      // Load stats for each case
       const statsEntries = await Promise.all(
         cases.map(c => getCaseStats(c.id).then(r => [c.id, r.data]).catch(() => [c.id, null]))
       )
       setStatsMap(Object.fromEntries(statsEntries))
+    } catch (e) {
+      console.error(e)
+    } finally {
       setLoading(false)
-    }).catch(() => setLoading(false))
+    }
+  }
+
+  useEffect(() => {
+    fetchCases()
   }, [])
+
+  const handleDeleteCase = async (e, caseId, name) => {
+    e.stopPropagation()
+    if (!window.confirm(`Are you sure you want to delete the case for Late ${name}? This cannot be undone.`)) {
+      return
+    }
+    setDeletingId(caseId)
+    try {
+      await deleteCase(caseId)
+      await fetchCases()
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Failed to delete case')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   if (loading) return (
     <div style={{ padding: '80px 24px', textAlign: 'center' }}>
@@ -93,7 +117,19 @@ export default function Cases() {
                     </div>
                   )}
 
-                  <span style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>›</span>
+                  <button
+                    onClick={e => handleDeleteCase(e, c.id, c.deceased_name)}
+                    disabled={deletingId === c.id}
+                    style={{
+                      background: 'rgba(220,80,80,0.12)', border: '1px solid rgba(220,80,80,0.3)',
+                      color: '#F08080', borderRadius: 8, padding: '6px 12px', fontSize: '0.8rem',
+                      cursor: 'pointer', fontWeight: 500, transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(220,80,80,0.25)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(220,80,80,0.12)'}
+                  >
+                    {deletingId === c.id ? '⏳' : '🗑️ Delete'}
+                  </button>
                 </div>
               )
             })}
