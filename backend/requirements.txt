@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+groq
+python-dotenv
+python-docx
+jinja2
+apscheduler
