@@ -27,6 +27,8 @@ def run(form_data: IntakeFormRequest) -> dict:
             "religion": form_data.religion,
         },
         "death_certificate_obtained": form_data.death_certificate_obtained,
+        "death_certificate_file": form_data.death_certificate_file,
+        "hospital_summary_file": form_data.hospital_summary_file,
         "banks": [b.model_dump() for b in form_data.banks],
         "insurance_policies": [p.model_dump() for p in form_data.insurance_policies],
         "employers": [e.model_dump() for e in form_data.employers],

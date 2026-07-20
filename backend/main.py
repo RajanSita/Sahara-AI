@@ -259,26 +259,60 @@ def send_gmail_task(task_id: str, recipient_email: str, db: Session = Depends(ge
     try:
         # Build list of relevant file attachments based on task type & uploaded documents
         attachments_to_send = []
+
+        def _resolve(val):
+            if not val:
+                return None
+            if isinstance(val, dict):
+                val = val.get("url") or val.get("filename") or ""
+            if not isinstance(val, str):
+                return None
+            clean = val.lstrip("/")
+            # Check relative paths
+            candidates = [clean, os.path.join("backend", clean), os.path.join("..", clean)]
+            if clean.startswith("uploads/"):
+                candidates.append(os.path.join("backend", clean))
+            for c in candidates:
+                if c and os.path.exists(c) and os.path.isfile(c):
+                    return c
+            return None
+
         case = db.query(Case).filter(Case.id == task.case_id).first()
         if case and case.raw_intake:
             try:
                 intake_data = json.loads(case.raw_intake)
-                # Universal attachments for all authorities (Death Certificate & Hospital Summary)
-                dc_file = intake_data.get("death_certificate_file")
-                hs_file = intake_data.get("hospital_summary_file")
-                if dc_file and os.path.exists(dc_file.lstrip("/")):
-                    attachments_to_send.append(dc_file.lstrip("/"))
-                if hs_file and os.path.exists(hs_file.lstrip("/")):
-                    attachments_to_send.append(hs_file.lstrip("/"))
 
-                # Authority-specific attachments (e.g. Property Documents for Property tasks)
+                # 1. Universal attachments (Death Certificate & Hospital Summary)
+                dc_path = _resolve(intake_data.get("death_certificate_file"))
+                hs_path = _resolve(intake_data.get("hospital_summary_file"))
+                if dc_path:
+                    attachments_to_send.append(dc_path)
+                if hs_path:
+                    attachments_to_send.append(hs_path)
+
+                # 2. Institution-specific attachments
                 if task.institution_type == "property":
                     for p in intake_data.get("properties", []):
-                        p_doc = p.get("document_file")
-                        if p_doc and os.path.exists(p_doc.lstrip("/")):
-                            attachments_to_send.append(p_doc.lstrip("/"))
-            except Exception:
-                pass
+                        p_doc = _resolve(p.get("document_file"))
+                        if p_doc:
+                            attachments_to_send.append(p_doc)
+                elif task.institution_type == "bank":
+                    for b in intake_data.get("banks", []):
+                        b_doc = _resolve(b.get("document_file"))
+                        if b_doc:
+                            attachments_to_send.append(b_doc)
+                elif task.institution_type == "insurance":
+                    for i in intake_data.get("insurance_policies", []):
+                        i_doc = _resolve(i.get("document_file"))
+                        if i_doc:
+                            attachments_to_send.append(i_doc)
+                elif task.institution_type == "employer":
+                    for e in intake_data.get("employers", []):
+                        e_doc = _resolve(e.get("document_file"))
+                        if e_doc:
+                            attachments_to_send.append(e_doc)
+            except Exception as ex:
+                print(f"[ATTACHMENT RESOLUTION ERROR]: {ex}")
 
         res = gmail_service.send_via_gmail_api(
             user=current_user,
