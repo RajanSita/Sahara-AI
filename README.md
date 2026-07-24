@@ -1,56 +1,80 @@
-# 🕊️ Sahara.ai — AI-Powered Multi-Agent Death & Estate Administration Assistant
+<div align="center">
 
-[![AICTE Hackathon](https://img.shields.io/badge/AICTE-AI%20Automation%20%26%20Intelligent%20Solutions-blue.svg)](https://aicte-india.org)
-[![UN SDGs](https://img.shields.io/badge/UN%20SDGs-1%20%7C%205%20%7C%2016-green.svg)](https://sdgs.un.org/goals)
-[![Backend](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.11-009688.svg)](https://fastapi.tiangolo.com/)
-[![LLM Engine](https://img.shields.io/badge/LLM-Groq%20%7C%20Llama--3.3--70B-orange.svg)](https://groq.com/)
-[![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite-61DAFB.svg)](https://react.dev/)
+# 🕊️ Sahara.ai
+### *AI-Powered Multi-Agent Death & Estate Administration Assistant*
 
-> **Sahara.ai** is an intelligent, multi-agent AI system designed to absorb the overwhelming post-death administrative burden for grieving families. It automatically identifies every required institutional task across banks, insurers, employers, and government offices, generates zero-placeholder legal claim letters, and manages direct email dispatching and inbox reply tracking — all while keeping a human reviewer strictly in control.
+[![Live Demo](https://img.shields.io/badge/%F0%9F%8C%90%20Live%20Application-sahara--ai--ten.vercel.app-gold?style=for-the-badge&logo=vercel&logoColor=white)](https://sahara-ai-ten.vercel.app/)
+[![Backend API](https://img.shields.io/badge/%E2%9A%A1%20API%20Server-Render--Live-009688?style=for-the-badge&logo=render&logoColor=white)](https://sahara-ai-backend-ux2f.onrender.com)
+[![GitHub Code](https://img.shields.io/badge/GitHub-RajanSita%2FSahara--AI-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/RajanSita/Sahara-AI)
+
+<br/>
+
+[![AICTE Hackathon](https://img.shields.io/badge/AICTE-AI%20Automation%20%26%20Intelligent%20Solutions-blue.svg?style=flat-square)](https://aicte-india.org)
+[![UN SDGs](https://img.shields.io/badge/UN%20SDGs-1%20%7C%205%20%7C%2016-green.svg?style=flat-square)](https://sdgs.un.org/goals)
+[![Backend](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.11-009688.svg?style=flat-square)](https://fastapi.tiangolo.com/)
+[![LLM Engine](https://img.shields.io/badge/LLM-Groq%20%7C%20Llama--3.3--70B-orange.svg?style=flat-square)](https://groq.com/)
+[![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite-61DAFB.svg?style=flat-square)](https://react.dev/)
+[![License](https://img.shields.io/badge/License-MIT-purple.svg?style=flat-square)](LICENSE)
+
+<p align="center">
+  <b>Sahara.ai</b> absorbs the overwhelming post-death administrative burden for grieving families. It automatically identifies every required institutional task across 50+ banks, insurers, employers, and government offices, generates zero-placeholder legal claim letters, and manages direct email dispatching with PDF attachments and inbox reply tracking — keeping a human reviewer strictly in control.
+</p>
+
+[🔗 Explore Live Demo App](https://sahara-ai-ten.vercel.app/) • [⚡ View FastAPI Backend API Docs](https://sahara-ai-backend-ux2f.onrender.com/docs)
+
+</div>
 
 ---
 
 ## 👥 Team & Submission Credits
 
-- **Project Lead & Developer:** Rajan
-- **Team Members:** Rajan, Ayushi Kapoor, Gagan Jha
-- **Track:** AICTE AI Automation and Intelligent Solutions — *AI for Social Good*
-- **Institution:** Vivekananda Institute of Professional Studies (VIPS), GGSIP University, New Delhi
+<div align="center">
+
+| Role | Contributor | Affiliation |
+| :--- | :--- | :--- |
+| **Project Lead & Core Developer** | **Rajan** | Vivekananda Institute of Professional Studies (VIPS), GGSIPU |
+| **Team Member** | **Ayushi Kapoor** | Vivekananda Institute of Professional Studies (VIPS), GGSIPU |
+| **Team Member** | **Gagan Jha** | Vivekananda Institute of Professional Studies (VIPS), GGSIPU |
+
+**Track:** AICTE AI Automation and Intelligent Solutions — *AI for Social Good*  
+**Category:** Multi-Agent Autonomous Systems & Legal Workflow Automation
+
+</div>
 
 ---
 
 ## 📌 UN Sustainable Development Goals (SDGs) Alignment
 
-| SDG | Focus Area | Impact |
+| SDG | Focus Area | Impact & Social Value |
 | :--- | :--- | :--- |
-| **SDG 1 — No Poverty** | Asset Protection | Prevents families from abandoning legitimate financial claims (insurance payouts, provident funds, fixed deposits) due to daunting paperwork. |
-| **SDG 5 — Gender Equality** | Restoring Agency | Widows frequently lose access to joint bank accounts and family assets due to procedural complexity; Sahara.ai restores financial autonomy. |
+| **SDG 1 — No Poverty** | Asset Protection | Prevents bereaved families from abandoning legitimate financial claims (insurance payouts, provident funds, fixed deposits) due to daunting paperwork and procedural inertia. |
+| **SDG 5 — Gender Equality** | Restoring Agency | Widows frequently lose access to joint bank accounts and family assets due to bureaucratic complexity; Sahara.ai restores financial independence and dignity. |
 | **SDG 16 — Peace, Justice & Strong Institutions** | Anti-Exploitation | Streamlines access to legal processes (succession certificates, land mutation) without needing informal touts or paying unofficial fees. |
 
 ---
 
 ## 🌟 Key Features
 
-### 🤖 1. Multi-Agent Autonomous Reasoning
-Driven by a 6-agent cooperative architecture (Intake, Classifier, Priority, Drafting, Follow-up, Decision Orchestrator) using Groq's `llama-3.3-70b-versatile` model.
+### 🤖 1. Multi-Agent Autonomous System
+Driven by a 6-agent cooperative architecture (Intake, Classifier, Priority, Drafting, Follow-up, Decision Orchestrator) powered by Groq's high-speed `llama-3.3-70b-versatile` model.
 
 ### 📝 2. Zero-Placeholder AI Draft Generation
 System prompts strictly enforce complete data resolution. Real asset context (Bank Account numbers, IFSC codes, Policy numbers, Property addresses, Employee IDs) is injected into templates, guaranteeing zero `[PLACEHOLDER]` text.
 
 ### 🏛️ 3. 100% Authority & Insurer Email Auto-Detection
-Pre-populates verified official email addresses for:
-- **50+ Public & Private Banks:** SBI, HDFC, ICICI, Axis, PNB, BOB, Canara, Union, Kotak, IndusInd, YES, IDBI, India Post Payments Bank, etc.
-- **Life Insurance:** LIC, HDFC Life, SBI Life, ICICI Prudential, Max Life, Tata AIA, Bajaj Allianz Life, PNB MetLife, etc.
-- **Health Insurance:** Star Health, Care Health, Niva Bupa, ManipalCigna.
-- **Vehicle / Motor Insurance:** Tata AIG, SBI General, Reliance General, IFFCO Tokio, Cholamandalam MS, Royal Sundaram, Liberty General, Universal Sompo, ICICI Lombard, HDFC ERGO, Go Digit, Acko.
+Pre-populates verified official email addresses for **50+ major institutions**:
+- **Banks (50+):** SBI (`customercare@sbi.co.in`), HDFC Bank, ICICI Bank, Axis Bank, PNB, BOB, Canara, Union Bank, Kotak, IndusInd, YES Bank, IDBI, Federal Bank, IDFC First, etc.
+- **Life Insurers:** LIC (`bo_claims@licindia.com`), HDFC Life, SBI Life, ICICI Prudential, Max Life, Tata AIA, Bajaj Allianz Life, PNB MetLife, etc.
+- **Health Insurers:** Star Health, Care Health, Niva Bupa, ManipalCigna.
+- **General & Motor Insurers:** Tata AIG, SBI General, Reliance General, IFFCO Tokio, Cholamandalam MS, Royal Sundaram, Liberty General, Universal Sompo, ICICI Lombard, HDFC ERGO, Go Digit, Acko.
 - **Government Authorities:** EPFO (`commissioner@epfindia.gov.in`), District Courts, Municipal Corporations.
 
 ### 🔐 4. Google OAuth 2.0 & Direct Gmail API Sending
 Seamless single-click login with Google OAuth 2.0. Users dispatch applications directly from their authenticated `@gmail.com` address via the official Gmail API (`users.messages.send`).
 
-### 📎 5. Selective Document Attachment Engine
-Automatically attaches required physical documents (uploaded during intake):
-- **Universal Proofs:** Death Certificate & Hospital Summary attached to all outgoing emails.
+### 📎 5. Smart PDF Document Attachment Engine
+Automatically resolves and attaches required physical documents uploaded during intake:
+- **Universal Proofs:** Death Certificate & Hospital/Cremation Summary attached to outgoing emails.
 - **Conditional Proofs:** Property Title Deeds & Tax Receipts attached specifically to Property Municipal tasks.
 
 ### 🔄 6. Automated Inbox Reply Tracking
@@ -61,7 +85,7 @@ Every draft generated by the AI enters an *"Awaiting Approval"* state on the int
 
 ---
 
-## 🏗️ Multi-Agent Architecture
+## 🏗️ Multi-Agent Architecture Diagram
 
 ```mermaid
 graph TD
@@ -79,11 +103,13 @@ graph TD
     SQLite -->|9. Periodic Audit| FollowupAgent["followup_agent"]
 ```
 
-| Agent | Responsibility |
+### 🧠 6-Agent Breakdown
+
+| Agent File | Role & Function |
 | :--- | :--- |
-| **`intake_agent.py`** | Parses raw user input and uploaded document metadata into normalized Pydantic schemas. |
+| **`intake_agent.py`** | Parses raw user form data and uploaded document metadata into normalized Pydantic schemas. |
 | **`classifier_agent.py`** | Maps institutions to required legal tasks and auto-detects official recipient emails. |
-| **`priority_agent.py`** | Ranks tasks by urgency and dependencies (e.g. Death Certificate blocks Bank transfers). |
+| **`priority_agent.py`** | Ranks tasks by urgency and legal dependencies (e.g. Death Certificate blocks Bank transfers). |
 | **`drafting_agent.py`** | Synthesizes formal claim applications using LLM prompts injected with full asset context. |
 | **`followup_agent.py`** | Monitors pending tasks and generates polite follow-up reminder drafts if unresolved. |
 | **`decision_agent.py`** | Orchestrates pipeline execution, enforces state transitions, and guarantees human approval. |
@@ -92,11 +118,16 @@ graph TD
 
 ## 🛠️ Technology Stack
 
-- **Backend:** Python 3.11+, FastAPI, SQLAlchemy, SQLite, Pydantic v2
-- **LLM Engine:** Groq API (`llama-3.3-70b-versatile`) with `httpx` fallback client
-- **Google Integrations:** `google-auth-oauthlib`, `google-api-python-client` (Gmail API v1)
-- **Frontend:** React 18, Vite, React Router 6, Axios
-- **Design System:** Custom Dark Glassmorphism, HSL Tokens, Micro-animations, Google Fonts (*Cormorant Garamond*, *Plus Jakarta Sans*)
+```
+─────────────────────────────────────────────────────────────────────────────
+Backend         FastAPI (Python 3.11+), SQLAlchemy ORM, Pydantic v2, Uvicorn
+LLM Engine      Groq Cloud API (Llama-3.3-70B-Versatile model)
+Google APIs     Google OAuth 2.0, Gmail REST API v1 (Base64 MIME Engine)
+Frontend        React 18, Vite, React Router 6, Axios
+Styling         Custom Dark Glassmorphism, HSL Tokens, Cormorant Garamond font
+Hosting         Vercel (Frontend SPA & Proxy) + Render (FastAPI Web Service)
+─────────────────────────────────────────────────────────────────────────────
+```
 
 ---
 
@@ -105,23 +136,13 @@ graph TD
 ### 1. Prerequisites
 - Python 3.11+
 - Node.js 18+ & npm
-- Google Cloud Console OAuth 2.0 Credentials (with `https://www.googleapis.com/auth/gmail.send` and `https://www.googleapis.com/auth/gmail.readonly` scopes)
+- Google Cloud Console OAuth 2.0 Client ID
 
-### 2. Environment Configuration
-Create a `.env` file inside the `backend/` directory:
-```env
-GROQ_API_KEY=your_groq_api_key
-SECRET_KEY=your_jwt_secret_key
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-FRONTEND_URL=http://localhost:5173
-REDIRECT_URI=http://localhost:8000/auth/google/callback
-```
-
-### 3. Backend Setup
+### 2. Backend Setup
 ```bash
 cd backend
 python -m venv venv
+
 # On Windows:
 venv\Scripts\activate
 # On Linux/macOS:
@@ -131,28 +152,27 @@ pip install -r requirements.txt
 python -m uvicorn main:app --reload --port 8000
 ```
 
-### 4. Frontend Setup
+### 3. Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+Open **`http://localhost:5173`** in your browser.
 
 ---
 
-## 🧪 Testing & Email Safeguards
+## 🌐 Production Deployment URLs
 
-For demo and testing purposes, `backend/agents/classifier_agent.py` contains a test redirection flag:
-```python
-TESTING_MODE = True
-TESTING_EMAIL = "sahara.ai.team@gmail.com"
-```
-When `TESTING_MODE` is enabled, all generated recipient emails route safely to **`sahara.ai.team@gmail.com`**, while the full production mappings for 50+ banks and insurers remain preserved in code comments. To switch to production mode, set `TESTING_MODE = False`.
+| Component | Provider | Live URL |
+| :--- | :--- | :--- |
+| **Frontend Web App** | Vercel | [https://sahara-ai-ten.vercel.app/](https://sahara-ai-ten.vercel.app/) |
+| **Backend API Server** | Render | [https://sahara-ai-backend-ux2f.onrender.com](https://sahara-ai-backend-ux2f.onrender.com) |
+| **Interactive API Docs** | FastAPI Swagger | [https://sahara-ai-backend-ux2f.onrender.com/docs](https://sahara-ai-backend-ux2f.onrender.com/docs) |
 
 ---
 
-## 📁 Repository Structure
+## 📁 Project Repository Structure
 
 ```
 Sahara_AI/
@@ -178,8 +198,9 @@ Sahara_AI/
 │   │   ├── api.js               # Axios API Interface
 │   │   └── utils.js             # Helpers & Color Tokens
 │   ├── index.html
+│   ├── vercel.json              # Frontend Proxy Configuration
 │   └── package.json
-├── DOC/                         # Project Proposal & Documentation
+├── vercel.json                  # Root Deployment Configuration
 └── README.md
 ```
 
@@ -187,4 +208,8 @@ Sahara_AI/
 
 ## 📜 License
 
-Distributed under the MIT License. Developed for **AICTE AI Automation and Intelligent Solutions Hackathon 2026**.
+Distributed under the **MIT License**. Developed for **AICTE AI Automation and Intelligent Solutions Hackathon 2026**.
+
+<div align="center">
+  <sub>Created with ❤️ for Social Good by Rajan, Ayushi Kapoor, and Gagan Jha</sub>
+</div>
