@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🕊️ Sahara.ai
+# <img src="logo.png" alt="Sahara.ai Logo" height="48" valign="middle" /> Sahara.ai
 ### *AI-Powered Multi-Agent Death & Estate Administration Assistant*
 
 [![Live Demo](https://img.shields.io/badge/%F0%9F%8C%90%20Live%20Application-sahara--ai--ten.vercel.app-gold?style=for-the-badge&logo=vercel&logoColor=white)](https://sahara-ai-ten.vercel.app/)
@@ -200,6 +200,7 @@ Sahara_AI/
 │   ├── index.html
 │   ├── vercel.json              # Frontend Proxy Configuration
 │   └── package.json
+├── logo.png                     # Official Sahara.ai Brand Logo
 ├── vercel.json                  # Root Deployment Configuration
 └── README.md
 ```
