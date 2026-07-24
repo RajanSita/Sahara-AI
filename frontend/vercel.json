@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://sahara-ai-backend.onrender.com/:path*"
+      "destination": "https://sahara-ai-backend-ux2f.onrender.com/:path*"
     },
     {
       "source": "/(.*)",
