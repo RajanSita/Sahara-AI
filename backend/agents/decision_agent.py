@@ -45,6 +45,11 @@ def process_new_case(form_data: IntakeFormRequest, db: Session, user_id: str = N
     contact = case_data.get("primary_contact") or {}
     case_id = str(uuid.uuid4())
 
+    merged_intake = form_data.model_dump()
+    merged_intake["death_certificate_file"] = getattr(form_data, "death_certificate_file", None)
+    merged_intake["hospital_summary_file"] = getattr(form_data, "hospital_summary_file", None) or getattr(form_data, "supporting_document_file", None)
+    merged_intake["supporting_document_file"] = getattr(form_data, "supporting_document_file", None) or getattr(form_data, "hospital_summary_file", None)
+
     db_case = Case(
         id=case_id,
         user_id=user_id,
@@ -57,7 +62,7 @@ def process_new_case(form_data: IntakeFormRequest, db: Session, user_id: str = N
         family_contact_relation=contact.get("relation"),
         family_contact_phone=contact.get("phone"),
         family_contact_email=contact.get("email"),
-        raw_intake=json.dumps(form_data.model_dump(), default=str),
+        raw_intake=json.dumps(merged_intake, default=str),
     )
     db.add(db_case)
     db.flush()  # get ID without full commit

@@ -243,6 +243,33 @@ def approve_task(task_id: str, db: Session = Depends(get_db)):
     return TaskOut.model_validate(task)
 
 
+def resolve_attachment_file(val):
+    if not val:
+        return None
+    if isinstance(val, dict):
+        val = val.get("url") or val.get("filename") or val.get("path") or ""
+    if not isinstance(val, str) or not val.strip():
+        return None
+
+    val = val.strip()
+    bare_name = os.path.basename(val)
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        val,
+        val.lstrip("/"),
+        os.path.join("uploads", bare_name),
+        os.path.join("backend", "uploads", bare_name),
+        os.path.join(base_dir, "uploads", bare_name),
+        os.path.join(base_dir, "..", "uploads", bare_name),
+        os.path.join(base_dir, "..", "backend", "uploads", bare_name),
+    ]
+    for c in candidates:
+        if c and os.path.exists(c) and os.path.isfile(c):
+            return os.path.abspath(c)
+    return None
+
+
 @app.post("/tasks/{task_id}/send-gmail", tags=["Tasks"])
 def send_gmail_task(task_id: str, recipient_email: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
@@ -260,59 +287,51 @@ def send_gmail_task(task_id: str, recipient_email: str, db: Session = Depends(ge
         # Build list of relevant file attachments based on task type & uploaded documents
         attachments_to_send = []
 
-        def _resolve(val):
-            if not val:
-                return None
-            if isinstance(val, dict):
-                val = val.get("url") or val.get("filename") or ""
-            if not isinstance(val, str):
-                return None
-            clean = val.lstrip("/")
-            # Check relative paths
-            candidates = [clean, os.path.join("backend", clean), os.path.join("..", clean)]
-            if clean.startswith("uploads/"):
-                candidates.append(os.path.join("backend", clean))
-            for c in candidates:
-                if c and os.path.exists(c) and os.path.isfile(c):
-                    return c
-            return None
-
         case = db.query(Case).filter(Case.id == task.case_id).first()
         if case and case.raw_intake:
             try:
                 intake_data = json.loads(case.raw_intake)
 
-                # 1. Universal attachments (Death Certificate & Hospital Summary)
-                dc_path = _resolve(intake_data.get("death_certificate_file"))
-                hs_path = _resolve(intake_data.get("hospital_summary_file"))
-                if dc_path:
+                # 1. Universal attachments (Death Certificate, Hospital Summary, Supporting Document)
+                dc_path = resolve_attachment_file(intake_data.get("death_certificate_file"))
+                hs_path = resolve_attachment_file(intake_data.get("hospital_summary_file")) or resolve_attachment_file(intake_data.get("supporting_document_file"))
+                if dc_path and dc_path not in attachments_to_send:
                     attachments_to_send.append(dc_path)
-                if hs_path:
+                if hs_path and hs_path not in attachments_to_send:
                     attachments_to_send.append(hs_path)
 
                 # 2. Institution-specific attachments
                 if task.institution_type == "property":
                     for p in intake_data.get("properties", []):
-                        p_doc = _resolve(p.get("document_file"))
-                        if p_doc:
+                        p_doc = resolve_attachment_file(p.get("document_file"))
+                        if p_doc and p_doc not in attachments_to_send:
                             attachments_to_send.append(p_doc)
                 elif task.institution_type == "bank":
                     for b in intake_data.get("banks", []):
-                        b_doc = _resolve(b.get("document_file"))
-                        if b_doc:
+                        b_doc = resolve_attachment_file(b.get("document_file"))
+                        if b_doc and b_doc not in attachments_to_send:
                             attachments_to_send.append(b_doc)
                 elif task.institution_type == "insurance":
                     for i in intake_data.get("insurance_policies", []):
-                        i_doc = _resolve(i.get("document_file"))
-                        if i_doc:
+                        i_doc = resolve_attachment_file(i.get("document_file"))
+                        if i_doc and i_doc not in attachments_to_send:
                             attachments_to_send.append(i_doc)
                 elif task.institution_type == "employer":
                     for e in intake_data.get("employers", []):
-                        e_doc = _resolve(e.get("document_file"))
-                        if e_doc:
+                        e_doc = resolve_attachment_file(e.get("document_file"))
+                        if e_doc and e_doc not in attachments_to_send:
                             attachments_to_send.append(e_doc)
+
+                # 3. Comprehensive scan: ensure any uploaded file in intake_data is resolved
+                for key, val in intake_data.items():
+                    if isinstance(val, str) and any(val.lower().endswith(ext) for ext in [".pdf", ".jpg", ".jpeg", ".png"]):
+                        resolved = resolve_attachment_file(val)
+                        if resolved and resolved not in attachments_to_send:
+                            attachments_to_send.append(resolved)
             except Exception as ex:
                 print(f"[ATTACHMENT RESOLUTION ERROR]: {ex}")
+
+        print(f"[GMAIL DISPATCH]: Sending email for Task {task_id} with resolved attachments: {attachments_to_send}")
 
         res = gmail_service.send_via_gmail_api(
             user=current_user,

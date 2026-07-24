@@ -10,9 +10,12 @@ import json
 import base64
 import uuid
 from datetime import datetime, timezone
+import mimetypes
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
+from email import encoders
 from typing import Optional, List, Dict, Any
 
 import httpx
@@ -150,10 +153,18 @@ def send_via_gmail_api(
 
     if attachments:
         for filepath in attachments:
-            if os.path.exists(filepath):
+            if filepath and os.path.exists(filepath) and os.path.isfile(filepath):
+                filename = os.path.basename(filepath)
+                ctype, encoding = mimetypes.guess_type(filepath)
+                if ctype is None or encoding is not None:
+                    ctype = "application/octet-stream"
+                maintype, subtype = ctype.split("/", 1)
+
                 with open(filepath, "rb") as f:
-                    part = MIMEApplication(f.read(), Name=os.path.basename(filepath))
-                    part["Content-Disposition"] = f'attachment; filename="{os.path.basename(filepath)}"'
+                    part = MIMEBase(maintype, subtype)
+                    part.set_payload(f.read())
+                    encoders.encode_base64(part)
+                    part.add_header("Content-Disposition", "attachment", filename=filename)
                     msg.attach(part)
 
     raw_message = base64.urlsafe_b64encode(msg.as_bytes()).decode("utf-8")
