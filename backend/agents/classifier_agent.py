@@ -158,8 +158,6 @@ def _guess_recipient_email(inst_name: str, inst_type: str) -> str:
     #     return "customer.services@royalsundaram.in"
     # elif "liberty general" in name_lower or "liberty insurance" in name_lower:
     #     return "care@libertyinsurance.in"
-    # elif "universal sompo" in name_lower:
-    #     return "contactus@universalsompo.com"
     # elif "manipal cigna" in name_lower or "manipalcigna" in name_lower:
     #     return "customercare@manipalcigna.com"
     # elif "digit" in name_lower or "go digit" in name_lower:

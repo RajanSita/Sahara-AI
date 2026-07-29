@@ -66,7 +66,7 @@ Pre-populates verified official email addresses for **50+ major institutions**:
 - **Banks (50+):** SBI (`customercare@sbi.co.in`), HDFC Bank, ICICI Bank, Axis Bank, PNB, BOB, Canara, Union Bank, Kotak, IndusInd, YES Bank, IDBI, Federal Bank, IDFC First, etc.
 - **Life Insurers:** LIC (`bo_claims@licindia.com`), HDFC Life, SBI Life, ICICI Prudential, Max Life, Tata AIA, Bajaj Allianz Life, PNB MetLife, etc.
 - **Health Insurers:** Star Health, Care Health, Niva Bupa, ManipalCigna.
-- **General & Motor Insurers:** Tata AIG, SBI General, Reliance General, IFFCO Tokio, Cholamandalam MS, Royal Sundaram, Liberty General, Universal Sompo, ICICI Lombard, HDFC ERGO, Go Digit, Acko.
+- **General & Motor Insurers:** Tata AIG, SBI General, Reliance General, IFFCO Tokio, Cholamandalam MS, Royal Sundaram, Liberty General, ICICI Lombard, HDFC ERGO, Go Digit, Acko.
 - **Government Authorities:** EPFO (`commissioner@epfindia.gov.in`), District Courts, Municipal Corporations.
 
 ### 🔐 4. Google OAuth 2.0 & Direct Gmail API Sending
