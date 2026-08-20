@@ -67,8 +67,8 @@ app.add_middleware(
 
 # ── Health Check ──────────────────────────────────────────────────────────────
 
-@app.get("/", tags=["Health"])
-@app.get("/health", tags=["Health"])
+@app.api_route("/", methods=["GET", "HEAD"], tags=["Health"])
+@app.api_route("/health", methods=["GET", "HEAD"], tags=["Health"])
 def health_check():
     return {"status": "ok", "service": "Sahara.ai", "version": "1.0.0"}
 
