@@ -46,10 +46,19 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── CORS — allow React dev server ─────────────────────────────────────────────
+# ── CORS ──────────────────────────────────────────────────────────────────────
+frontend_origin = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+allowed_origins = list(set([
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "https://sahara-ai-ten.vercel.app",
+    frontend_origin,
+]))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+    allow_origins=[o for o in allowed_origins if o],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,7 +68,8 @@ app.add_middleware(
 # ── Health Check ──────────────────────────────────────────────────────────────
 
 @app.get("/", tags=["Health"])
-def root():
+@app.get("/health", tags=["Health"])
+def health_check():
     return {"status": "ok", "service": "Sahara.ai", "version": "1.0.0"}
 
 
