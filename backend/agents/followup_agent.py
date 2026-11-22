@@ -62,10 +62,10 @@ def run(task: dict, original_draft: dict, case_data: dict, days_since_sent: int 
     subject = f"Follow-up: {original_draft.get('subject', task['task_type'])}"
     body = raw
 
-    if raw.startswith("SUBJECT:"):
-        lines = raw.split("\n", 2)
-        subject = lines[0].replace("SUBJECT:", "").strip()
-        body = "\n".join(lines[1:]).strip()
+    import re
+    subj_match = re.search(r"^(?:SUBJECT|Subject):\s*(.+)$", raw, re.MULTILINE)
+    if subj_match:
+        subject = subj_match.group(1).strip()
 
     return {
         "subject": subject,

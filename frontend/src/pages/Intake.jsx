@@ -124,6 +124,7 @@ export default function Intake() {
 
   // Track uploaded file names for display
   const [uploadedFiles, setUploadedFiles] = useState({})
+  const [uploadingFields, setUploadingFields] = useState({})
 
   const update = (field, value) => setForm(f => ({ ...f, [field]: value }))
 
@@ -141,7 +142,8 @@ export default function Intake() {
       const res = await createCase(form)
       navigate(`/cases/${res.data.case.id}`)
     } catch (err) {
-      setError(err.response?.data?.detail || 'An error occurred. Please check the backend is running.')
+      const detail = err.response?.data?.detail
+      setError(typeof detail === 'string' ? detail : 'An error occurred. Please check the backend is running.')
       setLoading(false)
     }
   }
@@ -149,12 +151,25 @@ export default function Intake() {
   const handleFileUpload = async (e, fieldName) => {
     const file = e.target.files[0]
     if (!file) return
+
+    // Size guard — 10 MB max
+    if (file.size > 10 * 1024 * 1024) {
+      setError('File is too large. Maximum size is 10 MB.')
+      return
+    }
+
+    setUploadingFields(prev => ({ ...prev, [fieldName]: true }))
+    setError(null)
     try {
       const res = await uploadFile(file)
-      update(fieldName, res.data.filename)
+      // Store the full URL path so the backend can find it via resolve_attachment_file
+      update(fieldName, res.data.url)
       setUploadedFiles(prev => ({ ...prev, [fieldName]: file.name }))
     } catch (err) {
-      setError('File upload failed. Please try again.')
+      const msg = err.response?.data?.detail || err.message || 'Upload failed'
+      setError(`File upload failed: ${msg}. Make sure the backend is running on port 8000.`)
+    } finally {
+      setUploadingFields(prev => ({ ...prev, [fieldName]: false }))
     }
   }
 
@@ -282,7 +297,9 @@ export default function Intake() {
                         onChange={e => handleFileUpload(e, 'death_certificate_file')}
                         style={{ display: 'none' }} id="dc-upload" />
                       <label htmlFor="dc-upload" style={{ cursor: 'pointer', display: 'block' }}>
-                        {uploadedFiles.death_certificate_file ? (
+                        {uploadingFields.death_certificate_file ? (
+                          <div style={{ color: 'var(--gold)', fontSize: '0.88rem' }}>⏳ Uploading…</div>
+                        ) : uploadedFiles.death_certificate_file ? (
                           <div style={{ color: 'var(--sage-light)', fontSize: '0.88rem' }}>
                             ✅ {uploadedFiles.death_certificate_file}
                           </div>
@@ -314,7 +331,9 @@ export default function Intake() {
                         onChange={e => handleFileUpload(e, 'supporting_document_file')}
                         style={{ display: 'none' }} id="sd-upload" />
                       <label htmlFor="sd-upload" style={{ cursor: 'pointer', display: 'block' }}>
-                        {uploadedFiles.supporting_document_file ? (
+                        {uploadingFields.supporting_document_file ? (
+                          <div style={{ color: 'var(--gold)', fontSize: '0.88rem' }}>⏳ Uploading…</div>
+                        ) : uploadedFiles.supporting_document_file ? (
                           <div style={{ color: 'var(--sage-light)', fontSize: '0.88rem' }}>
                             ✅ {uploadedFiles.supporting_document_file}
                           </div>
@@ -502,18 +521,26 @@ export default function Intake() {
                         onChange={async (e) => {
                           const file = e.target.files[0]
                           if (file) {
+                            const key = `prop_${i}`
+                            setUploadingFields(prev => ({ ...prev, [key]: true }))
+                            setError(null)
                             try {
                               const res = await uploadFile(file)
-                              updateItem('properties', i, 'document_file', res.data.filename)
-                              setUploadedFiles(prev => ({ ...prev, [`prop_${i}`]: file.name }))
+                              updateItem('properties', i, 'document_file', res.data.url)
+                              setUploadedFiles(prev => ({ ...prev, [key]: file.name }))
                             } catch (err) {
-                              setError('Failed to upload property document.')
+                              const msg = err.response?.data?.detail || err.message || 'Upload failed'
+                              setError(`Failed to upload property document: ${msg}`)
+                            } finally {
+                              setUploadingFields(prev => ({ ...prev, [key]: false }))
                             }
                           }
                         }}
                         style={{ display: 'none' }} id={`prop-upload-${i}`} />
                       <label htmlFor={`prop-upload-${i}`} style={{ cursor: 'pointer', display: 'block' }}>
-                        {uploadedFiles[`prop_${i}`] || prop.document_file ? (
+                        {uploadingFields[`prop_${i}`] ? (
+                          <div style={{ color: 'var(--gold)', fontSize: '0.88rem' }}>⏳ Uploading…</div>
+                        ) : uploadedFiles[`prop_${i}`] || prop.document_file ? (
                           <div style={{ color: 'var(--sage-light)', fontSize: '0.88rem' }}>
                             ✅ {uploadedFiles[`prop_${i}`] || prop.document_file}
                           </div>

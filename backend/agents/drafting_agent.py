@@ -114,13 +114,13 @@ def run(task: dict, case_data: dict) -> dict:
     )
 
     # Parse subject and body
-    subject = ""
+    subject = f"Re: {task.get('task_type')} — {task.get('institution_name')}"
     body = raw
 
-    if raw.startswith("SUBJECT:"):
-        lines = raw.split("\n", 2)
-        subject = lines[0].replace("SUBJECT:", "").strip()
-        body = "\n".join(lines[1:]).strip()
+    import re
+    subj_match = re.search(r"^(?:SUBJECT|Subject):\s*(.+)$", raw, re.MULTILINE)
+    if subj_match:
+        subject = subj_match.group(1).strip()
 
     # Post-processing string cleanup fallback
     contact = case_data.get("primary_contact") or {}
