@@ -53,12 +53,14 @@ allowed_origins = list(set([
     "http://localhost:3000",
     "http://127.0.0.1:5173",
     "https://sahara-ai-ten.vercel.app",
+    "https://sahara-ai.vercel.app",
     frontend_origin,
 ]))
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o for o in allowed_origins if o],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -128,6 +130,7 @@ async def upload_file(file: UploadFile = File(...)):
 
 # ── Cases ─────────────────────────────────────────────────────────────────────
 
+@app.post("/cases", response_model=CreateCaseResponse, tags=["Cases"])
 @app.post("/cases/", response_model=CreateCaseResponse, tags=["Cases"])
 def create_case(form: IntakeFormRequest, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_optional_current_user)):
     """
@@ -150,6 +153,7 @@ def create_case(form: IntakeFormRequest, db: Session = Depends(get_db), current_
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
 
 
+@app.get("/cases", tags=["Cases"])
 @app.get("/cases/", tags=["Cases"])
 def list_cases(db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_optional_current_user)):
     """List cases (filtered by user if authenticated)."""
