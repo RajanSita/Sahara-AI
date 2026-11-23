@@ -13,14 +13,15 @@ export default function Cases() {
   const fetchCases = async () => {
     try {
       const res = await listCases()
-      const cases = res.data
-      setCases(cases)
+      const casesData = Array.isArray(res.data) ? res.data : []
+      setCases(casesData)
       const statsEntries = await Promise.all(
-        cases.map(c => getCaseStats(c.id).then(r => [c.id, r.data]).catch(() => [c.id, null]))
+        casesData.map(c => getCaseStats(c.id).then(r => [c.id, r.data]).catch(() => [c.id, null]))
       )
       setStatsMap(Object.fromEntries(statsEntries))
     } catch (e) {
       console.error(e)
+      setCases([])
     } finally {
       setLoading(false)
     }
