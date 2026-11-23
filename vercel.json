@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://sahara-ai-backend-ux2f.onrender.com/:path*"
+      "source": "/api/(.*)",
+      "destination": "https://sahara-ai-backend-ux2f.onrender.com/$1"
     },
     {
       "source": "/(.*)",
