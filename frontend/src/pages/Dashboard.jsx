@@ -32,9 +32,9 @@ export default function Dashboard() {
         getCaseTasks(caseId),
         getCaseStats(caseId),
       ])
-      setCaseData(cRes.data)
-      setTasks(tRes.data)
-      setStats(sRes.data)
+      setCaseData(typeof cRes.data === 'object' && cRes.data ? cRes.data : null)
+      setTasks(Array.isArray(tRes.data) ? tRes.data : [])
+      setStats(typeof sRes.data === 'object' && sRes.data ? sRes.data : null)
     } catch (e) {
       console.error(e)
     } finally {
