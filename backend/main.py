@@ -156,11 +156,11 @@ def create_case(form: IntakeFormRequest, db: Session = Depends(get_db), current_
 @app.get("/cases", tags=["Cases"])
 @app.get("/cases/", tags=["Cases"])
 def list_cases(db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_optional_current_user)):
-    """List cases (filtered by user if authenticated)."""
-    query = db.query(Case)
+    """List cases (strictly isolated by authenticated user)."""
     if current_user:
-        query = query.filter((Case.user_id == current_user.id) | (Case.user_id.is_(None)))
-    cases = query.order_by(Case.created_at.desc()).all()
+        cases = db.query(Case).filter(Case.user_id == current_user.id).order_by(Case.created_at.desc()).all()
+    else:
+        cases = db.query(Case).filter(Case.user_id.is_(None)).order_by(Case.created_at.desc()).all()
     return [CaseOut.model_validate(c) for c in cases]
 
 
